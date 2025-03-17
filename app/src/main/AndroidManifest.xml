@@ -30,8 +30,12 @@
             android:name=".MainActivity"
             android:exported="false" />
 
-        <activity 
+        <activity
             android:name=".AddCredentialActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".CredentialDetailActivity"
             android:exported="false" />
     </application>
 

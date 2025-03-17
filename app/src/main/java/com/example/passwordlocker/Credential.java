@@ -15,6 +15,7 @@ public class Credential {
         this.encryptionKey = encryptionKey;
     }
 
+    // getter methods for saved credentials
     public long getId() { return id; }
     public String getWebsite() { return website; }
     public String getUsername() { return username; }

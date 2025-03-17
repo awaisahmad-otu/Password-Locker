@@ -14,20 +14,20 @@ public class Encryption {
     private static final int GCM_TAG_LENGTH = 128;
 
     public static String encrypt(String data, SecretKey key) throws Exception {
-        // Generate a random IV
+        // generate a random iv
         byte[] iv = new byte[GCM_IV_LENGTH];
         SecureRandom random = new SecureRandom();
         random.nextBytes(iv);
 
-        // Initialize cipher with GCM mode
+        // initialize cipher with gcm mode
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
         cipher.init(Cipher.ENCRYPT_MODE, key, spec);
 
-        // Encrypt the data
+        // encrypt the data
         byte[] encrypted = cipher.doFinal(data.getBytes());
 
-        // Combine IV and encrypted data
+        // combine iv and encrypted data
         byte[] combined = new byte[iv.length + encrypted.length];
         System.arraycopy(iv, 0, combined, 0, iv.length);
         System.arraycopy(encrypted, 0, combined, iv.length, encrypted.length);
@@ -36,34 +36,36 @@ public class Encryption {
     }
 
     public static String decrypt(String encryptedData, SecretKey key) throws Exception {
-        // Decode the combined data
+        // decode the combined data
         byte[] combined = Base64.decode(encryptedData, Base64.NO_WRAP);
 
-        // Extract IV
+        // extract iv
         byte[] iv = new byte[GCM_IV_LENGTH];
         System.arraycopy(combined, 0, iv, 0, iv.length);
 
-        // Extract encrypted data
+        // extract encrypted data
         byte[] encrypted = new byte[combined.length - GCM_IV_LENGTH];
         System.arraycopy(combined, GCM_IV_LENGTH, encrypted, 0, encrypted.length);
 
-        // Initialize cipher for decryption
+        // initialize cipher for decryption
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
         cipher.init(Cipher.DECRYPT_MODE, key, spec);
 
-        // Decrypt the data
+        // decrypt the data
         byte[] decrypted = cipher.doFinal(encrypted);
         return new String(decrypted);
     }
 
     public static SecretKey generateKey() throws Exception {
+        // generate a new aes-256 key
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(256); // Using AES-256
+        keyGenerator.init(256); // using aes-256
         return keyGenerator.generateKey();
     }
 
     public static SecretKey getKeyFromString(String keyStr) {
+        // decode the key string into a secretkey object
         byte[] decodedKey = Base64.decode(keyStr, Base64.NO_WRAP);
         return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
     }

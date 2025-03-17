@@ -17,6 +17,7 @@ public class SignIn extends AppCompatActivity {
     private Button loginButton;
     private Button createAccountButton;
     private DBHelper dbHelper;
+    private static String signedInUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,40 +33,7 @@ public class SignIn extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String email = emailEditText.getText().toString().trim();
-                String password = passwordEditText.getText().toString().trim();
-
-                // Validate fields
-                if (email.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(SignIn.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                SQLiteDatabase db = dbHelper.getReadableDatabase();
-                Cursor cursor = db.query("users", null, "email=?",
-                        new String[]{email}, null, null, null);
-
-                // Check user's login
-                if (cursor != null && cursor.moveToFirst()) {
-                    String storedHashedPassword = cursor.getString(cursor.getColumnIndex("hashedPassword"));
-                    String storedHashedSecurityAnswer = cursor.getString(cursor.getColumnIndex("hashedSecurityAnswer"));
-
-                    if (Hashing.verifyPassword(password, storedHashedPassword)) {
-                        // Login successful
-                        Intent intent = new Intent(SignIn.this, MainActivity.class);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toast.makeText(SignIn.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Toast.makeText(SignIn.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
-                }
-
-                if (cursor != null) {
-                    cursor.close();
-                }
-                db.close();
+                signInUser();
             }
         });
 
@@ -76,5 +44,39 @@ public class SignIn extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    // sign the user into the system
+    private void signInUser() {
+        String email = emailEditText.getText().toString().trim();
+        String password = passwordEditText.getText().toString().trim();
+
+        // ensure all fields are filled
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // check database to authenticate user
+        Cursor cursor = dbHelper.getUser(email);
+        if (cursor != null && cursor.moveToFirst()) {
+            String storedHashedPassword = cursor.getString(cursor.getColumnIndex("hashedPassword"));
+            if (Hashing.verifyPassword(password, storedHashedPassword)) {
+                signedInUserEmail = email;
+                Toast.makeText(this, "Sign-in successful", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(SignIn.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show();
+            }
+            cursor.close();
+        } else {
+            Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public static String getSignedInUserEmail() {
+        return signedInUserEmail;
     }
 }

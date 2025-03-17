@@ -11,7 +11,7 @@ public class User {
         this.hashedSecurityAnswer = hashedSecurityAnswer;
     }
 
-    // Getters and setters
+    // getters and setters for user
     public String getEmail() {
         return email;
     }

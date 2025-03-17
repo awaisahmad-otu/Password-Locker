@@ -15,6 +15,7 @@ public class SignUp extends AppCompatActivity {
     private EditText securityQuestionEditText;
     private EditText securityAnswerEditText;
     private Button signupButton;
+    private Button signinButton;
     private DBHelper dbHelper;
 
     @Override
@@ -27,6 +28,7 @@ public class SignUp extends AppCompatActivity {
         securityQuestionEditText = findViewById(R.id.security_question);
         securityAnswerEditText = findViewById(R.id.security_answer);
         signupButton = findViewById(R.id.signup_button);
+        signinButton = findViewById(R.id.signin_button);
         dbHelper = new DBHelper(this);
 
         signupButton.setOnClickListener(new View.OnClickListener() {
@@ -35,46 +37,48 @@ public class SignUp extends AppCompatActivity {
                 registerUser();
             }
         });
+
+        signinButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigateToSignIn();
+            }
+        });
     }
 
+    // add user to database
     private void registerUser() {
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
+        String securityQuestion = securityQuestionEditText.getText().toString().trim();
         String securityAnswer = securityAnswerEditText.getText().toString().trim();
 
-        // Validate input
-        if (email.isEmpty() || password.isEmpty() || securityAnswer.isEmpty()) {
+        // ensure all fields are filled
+        if (email.isEmpty() || password.isEmpty() || securityQuestion.isEmpty() || securityAnswer.isEmpty()) {
             Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Check if user already exists
-        if (dbHelper.checkUser(email)) {
-            Toast.makeText(this, "Email already registered", Toast.LENGTH_SHORT).show();
-            return;
+        // hash password and security answer using hash class
+        String hashedPassword = Hashing.hashPassword(password);
+        String hashedSecurityAnswer = Hashing.hashPassword(securityAnswer);
+
+        // register user
+        long userId = dbHelper.addUser(email, hashedPassword, securityQuestion, hashedSecurityAnswer);
+        if (userId != -1) {
+            Toast.makeText(this, "User registered successfully", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(SignUp.this, SignIn.class);
+            startActivity(intent);
+            finish();
+        } else {
+            Toast.makeText(this, "Error registering user", Toast.LENGTH_SHORT).show();
         }
+    }
 
-        try {
-            // Hash password and security answer
-            String hashedPassword = Hashing.hashPassword(password);
-            String hashedSecurityAnswer = Hashing.hashPassword(securityAnswer);
-
-            // Add user to database
-            long result = dbHelper.addUser(email, hashedPassword, hashedSecurityAnswer);
-
-            if (result != -1) {
-                Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show();
-                // Navigate back to SignIn
-                Intent intent = new Intent(SignUp.this, SignIn.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // Clear activity stack
-                startActivity(intent);
-                finish();
-            } else {
-                Toast.makeText(this, "Registration failed", Toast.LENGTH_SHORT).show();
-            }
-        } catch (Exception e) {
-            Toast.makeText(this, "Error during registration", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
+    // navigate back to sign in screen
+    private void navigateToSignIn() {
+        Intent intent = new Intent(SignUp.this, SignIn.class);
+        startActivity(intent);
+        finish();
     }
 }

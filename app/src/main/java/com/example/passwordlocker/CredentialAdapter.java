@@ -13,6 +13,7 @@ public class CredentialAdapter extends ArrayAdapter<Credential> {
     private List<Credential> credentials;
     private DBHelper dbHelper;
 
+    // class for credential view
     public CredentialAdapter(Context context, List<Credential> credentials, DBHelper dbHelper) {
         super(context, 0, credentials);
         this.context = context;
@@ -29,16 +30,8 @@ public class CredentialAdapter extends ArrayAdapter<Credential> {
         Credential credential = credentials.get(position);
 
         TextView websiteText = convertView.findViewById(R.id.website_text);
-        TextView usernameText = convertView.findViewById(R.id.username_text);
-        TextView passwordText = convertView.findViewById(R.id.password_text);
-
         websiteText.setText("Website: " + credential.getWebsite());
-        usernameText.setText("Username: " + credential.getUsername());
-        
-        // Decrypt and display the password
-        String decryptedPassword = credential.getDecryptedPassword(dbHelper);
-        passwordText.setText("Password: " + (decryptedPassword != null ? decryptedPassword : "Error decrypting"));
 
         return convertView;
     }
-} 
+}
