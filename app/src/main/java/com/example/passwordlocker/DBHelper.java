@@ -150,4 +150,12 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return null;
     }
+
+    // Add this method to delete a credential by ID
+    public boolean deleteCredentialById(long id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rowsDeleted = db.delete(TABLE_CREDENTIALS, KEY_ID + "=?", new String[]{String.valueOf(id)});
+        db.close();
+        return rowsDeleted > 0; // Return true if at least one row was deleted
+    }
 }

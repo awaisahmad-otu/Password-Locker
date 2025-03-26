@@ -1,5 +1,6 @@
 package com.example.passwordlocker;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +62,32 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, CredentialDetailActivity.class);
                 intent.putExtra("credential_id", credential.getId());
                 startActivity(intent);
+            }
+        });
+
+        // set up long click listener for list view items to delete a credential
+        credentialsListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Credential credential = credentialsList.get(position);
+
+                // show a confirmation dialog before deleting
+                new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("Delete Credential")
+                    .setMessage("Are you sure you want to delete this credential?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        boolean deleted = dbHelper.deleteCredentialById(credential.getId());
+                        if (deleted) {
+                            Toast.makeText(MainActivity.this, "Credential deleted", Toast.LENGTH_SHORT).show();
+                            loadCredentials(); // reload the credentials list
+                        } else {
+                            Toast.makeText(MainActivity.this, "Failed to delete credential", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+
+                return true; // indicate that the long click was handled
             }
         });
 
